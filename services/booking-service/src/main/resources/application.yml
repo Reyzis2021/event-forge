@@ -1,0 +1,27 @@
+server:
+  port: 8082
+
+spring:
+  application:
+    name: booking-service
+
+  datasource:
+    url: jdbc:postgresql://localhost:5435/booking_db
+    username: booking_user
+    password: booking_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
+
+  kafka:
+    bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
+
+event-service:
+  base-url: http://localhost:8081
