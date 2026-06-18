@@ -1,0 +1,13 @@
+package com.reyzarium.eventforge.eventservice.common.error;
+
+public enum EventErrorCode {
+    INVALID_EVENT_DATES,
+    INVALID_TICKET_PRICE,
+    INVALID_CAPACITY,
+    EVENT_NOT_FOUND,
+    EVENT_ACCESS_DENIED,
+    EVENT_INVALID_STATUS,
+    EVENT_ALREADY_PUBLISHED,
+    EVENT_ALREADY_CANCELLED,
+    TICKET_TYPE_NOT_FOUND
+}

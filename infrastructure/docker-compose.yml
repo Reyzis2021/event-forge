@@ -1,0 +1,286 @@
+services:
+  # =========================
+  # PostgreSQL per service
+  # =========================
+
+  auth-postgres:
+    image: postgres:17
+    container_name: eventforge-auth-postgres
+    environment:
+      POSTGRES_DB: auth_db
+      POSTGRES_USER: auth_user
+      POSTGRES_PASSWORD: auth_password
+    ports:
+      - "5433:5432"
+    volumes:
+      - auth-postgres-data:/var/lib/postgresql/data
+    networks:
+      - eventforge-network
+
+  event-postgres:
+    image: postgres:17
+    container_name: eventforge-event-postgres
+    environment:
+      POSTGRES_DB: event_db
+      POSTGRES_USER: event_user
+      POSTGRES_PASSWORD: event_password
+    ports:
+      - "5434:5432"
+    volumes:
+      - event-postgres-data:/var/lib/postgresql/data
+    networks:
+      - eventforge-network
+
+  booking-postgres:
+    image: postgres:17
+    container_name: eventforge-booking-postgres
+    environment:
+      POSTGRES_DB: booking_db
+      POSTGRES_USER: booking_user
+      POSTGRES_PASSWORD: booking_password
+    ports:
+      - "5435:5432"
+    volumes:
+      - booking-postgres-data:/var/lib/postgresql/data
+    networks:
+      - eventforge-network
+
+  payment-postgres:
+    image: postgres:17
+    container_name: eventforge-payment-postgres
+    environment:
+      POSTGRES_DB: payment_db
+      POSTGRES_USER: payment_user
+      POSTGRES_PASSWORD: payment_password
+    ports:
+      - "5436:5432"
+    volumes:
+      - payment-postgres-data:/var/lib/postgresql/data
+    networks:
+      - eventforge-network
+
+  ticket-postgres:
+    image: postgres:17
+    container_name: eventforge-ticket-postgres
+    environment:
+      POSTGRES_DB: ticket_db
+      POSTGRES_USER: ticket_user
+      POSTGRES_PASSWORD: ticket_password
+    ports:
+      - "5437:5432"
+    volumes:
+      - ticket-postgres-data:/var/lib/postgresql/data
+    networks:
+      - eventforge-network
+
+  notification-postgres:
+    image: postgres:17
+    container_name: eventforge-notification-postgres
+    environment:
+      POSTGRES_DB: notification_db
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: notification_password
+    ports:
+      - "5438:5432"
+    volumes:
+      - notification-postgres-data:/var/lib/postgresql/data
+    networks:
+      - eventforge-network
+
+  analytics-postgres:
+    image: postgres:17
+    container_name: eventforge-analytics-postgres
+    environment:
+      POSTGRES_DB: analytics_db
+      POSTGRES_USER: analytics_user
+      POSTGRES_PASSWORD: analytics_password
+    ports:
+      - "5439:5432"
+    volumes:
+      - analytics-postgres-data:/var/lib/postgresql/data
+    networks:
+      - eventforge-network
+
+  # =========================
+  # Kafka KRaft cluster
+  # =========================
+
+  kafka-1:
+    image: bitnami/kafka:4.0
+    container_name: eventforge-kafka-1
+    ports:
+      - "9092:9092"
+    environment:
+      KAFKA_KRAFT_CLUSTER_ID: eventforgeKafkaCluster00001
+      KAFKA_CFG_NODE_ID: 1
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_CFG_LISTENERS: EXTERNAL://:9092,INTERNAL://:19092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: EXTERNAL://localhost:9092,INTERNAL://kafka-1:19092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka-1-data:/bitnami/kafka
+    networks:
+      - eventforge-network
+
+  kafka-2:
+    image: bitnami/kafka:4.0
+    container_name: eventforge-kafka-2
+    ports:
+      - "9094:9092"
+    environment:
+      KAFKA_KRAFT_CLUSTER_ID: eventforgeKafkaCluster00001
+      KAFKA_CFG_NODE_ID: 2
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_CFG_LISTENERS: EXTERNAL://:9092,INTERNAL://:19092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: EXTERNAL://localhost:9094,INTERNAL://kafka-2:19092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka-2-data:/bitnami/kafka
+    networks:
+      - eventforge-network
+
+  kafka-3:
+    image: bitnami/kafka:4.0
+    container_name: eventforge-kafka-3
+    ports:
+      - "9096:9092"
+    environment:
+      KAFKA_KRAFT_CLUSTER_ID: eventforgeKafkaCluster00001
+      KAFKA_CFG_NODE_ID: 3
+      KAFKA_CFG_PROCESS_ROLES: broker,controller
+      KAFKA_CFG_CONTROLLER_QUORUM_VOTERS: 1@kafka-1:9093,2@kafka-2:9093,3@kafka-3:9093
+      KAFKA_CFG_LISTENERS: EXTERNAL://:9092,INTERNAL://:19092,CONTROLLER://:9093
+      KAFKA_CFG_ADVERTISED_LISTENERS: EXTERNAL://localhost:9096,INTERNAL://kafka-3:19092
+      KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP: EXTERNAL:PLAINTEXT,INTERNAL:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_CFG_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_CFG_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_CFG_DEFAULT_REPLICATION_FACTOR: 3
+      KAFKA_CFG_MIN_INSYNC_REPLICAS: 2
+      KAFKA_CFG_OFFSETS_TOPIC_REPLICATION_FACTOR: 3
+      KAFKA_CFG_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 3
+      KAFKA_CFG_TRANSACTION_STATE_LOG_MIN_ISR: 2
+      KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE: "false"
+    volumes:
+      - kafka-3-data:/bitnami/kafka
+    networks:
+      - eventforge-network
+
+  kafka-ui:
+    image: provectuslabs/kafka-ui:latest
+    container_name: eventforge-kafka-ui
+    ports:
+      - "8085:8080"
+    environment:
+      KAFKA_CLUSTERS_0_NAME: eventforge-kraft
+      KAFKA_CLUSTERS_0_BOOTSTRAPSERVERS: kafka-1:19092,kafka-2:19092,kafka-3:19092
+    depends_on:
+      - kafka-1
+      - kafka-2
+      - kafka-3
+    networks:
+      - eventforge-network
+
+  # =========================
+  # Redis Cluster
+  # =========================
+
+  redis-1:
+    image: redis:8
+    container_name: eventforge-redis-1
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes --port 6379
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-1-data:/data
+    networks:
+      - eventforge-network
+
+  redis-2:
+    image: redis:8
+    container_name: eventforge-redis-2
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes --port 6379
+    ports:
+      - "6380:6379"
+    volumes:
+      - redis-2-data:/data
+    networks:
+      - eventforge-network
+
+  redis-3:
+    image: redis:8
+    container_name: eventforge-redis-3
+    command: redis-server --cluster-enabled yes --cluster-config-file nodes.conf --cluster-node-timeout 5000 --appendonly yes --port 6379
+    ports:
+      - "6381:6379"
+    volumes:
+      - redis-3-data:/data
+    networks:
+      - eventforge-network
+
+  redis-cluster-init:
+    image: redis:8
+    container_name: eventforge-redis-cluster-init
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+    command: >
+      sh -c "
+      sleep 10 &&
+      echo yes | redis-cli --cluster create
+      redis-1:6379 redis-2:6379 redis-3:6379
+      --cluster-replicas 0
+      "
+    networks:
+      - eventforge-network
+
+  redis-insight:
+    image: redis/redisinsight:latest
+    container_name: eventforge-redis-insight
+    ports:
+      - "5540:5540"
+    depends_on:
+      - redis-1
+      - redis-2
+      - redis-3
+    networks:
+      - eventforge-network
+
+volumes:
+  auth-postgres-data:
+  event-postgres-data:
+  booking-postgres-data:
+  payment-postgres-data:
+  ticket-postgres-data:
+  notification-postgres-data:
+  analytics-postgres-data:
+
+  kafka-1-data:
+  kafka-2-data:
+  kafka-3-data:
+
+  redis-1-data:
+  redis-2-data:
+  redis-3-data:
+
+networks:
+  eventforge-network:
+    driver: bridge

@@ -1,0 +1,14 @@
+rootProject.name = 'event-forge'
+
+include 'libs:common'
+include 'libs:security'
+include 'libs:kafka-contracts'
+include 'libs:test-support'
+
+include 'services:auth-service'
+include 'services:event-service'
+include 'services:booking-service'
+include 'services:payment-service'
+include 'services:ticket-service'
+include 'services:notification-service'
+include 'services:analytics-service'
