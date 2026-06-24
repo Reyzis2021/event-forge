@@ -78,6 +78,11 @@ public class BookingEntity {
         this.updatedAt = now;
     }
 
+    public void markPaymentFailed(Instant now) {
+        this.status = BookingStatus.PAYMENT_FAILED;
+        this.updatedAt = now;
+    }
+
     public boolean isPendingPayment() {
         return status == BookingStatus.PENDING_PAYMENT;
     }

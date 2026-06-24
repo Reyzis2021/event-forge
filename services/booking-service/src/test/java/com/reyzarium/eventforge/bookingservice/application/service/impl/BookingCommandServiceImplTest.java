@@ -3,6 +3,7 @@ package com.reyzarium.eventforge.bookingservice.application.service.impl;
 import com.reyzarium.eventforge.bookingservice.api.booking.dto.CreateBookingRequest;
 import com.reyzarium.eventforge.bookingservice.application.mapper.BookingMapper;
 import com.reyzarium.eventforge.bookingservice.application.mapper.OutboxMapper;
+import com.reyzarium.eventforge.bookingservice.application.validator.BookingCommandValidator;
 import com.reyzarium.eventforge.bookingservice.common.error.BookingErrorCode;
 import com.reyzarium.eventforge.bookingservice.common.error.BookingServiceException;
 import com.reyzarium.eventforge.bookingservice.domain.booking.BookingStatus;
@@ -76,6 +77,7 @@ class BookingCommandServiceImplTest {
                 eventServiceClient,
                 bookingMapper,
                 outboxMapper,
+                new BookingCommandValidator(),
                 Clock.fixed(NOW, ZoneOffset.UTC)
         );
     }

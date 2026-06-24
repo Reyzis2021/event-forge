@@ -48,6 +48,12 @@ CREATE TABLE outbox_events (
                                last_error TEXT
 );
 
+CREATE TABLE processed_events (
+                                  event_id UUID PRIMARY KEY,
+                                  event_type VARCHAR(100) NOT NULL,
+                                  processed_at TIMESTAMP WITH TIME ZONE NOT NULL
+);
+
 CREATE UNIQUE INDEX idx_bookings_user_id_idempotency_key ON bookings(user_id, idempotency_key);
 CREATE INDEX idx_bookings_user_id ON bookings(user_id);
 CREATE INDEX idx_bookings_event_id ON bookings(event_id);

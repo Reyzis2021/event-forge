@@ -6,4 +6,5 @@ public final class KafkaTopicNames {
     }
 
     public static final String BOOKING_EVENTS = "booking.events";
+    public static final String PAYMENT_EVENTS = "payment.events";
 }

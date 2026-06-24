@@ -5,8 +5,7 @@ import com.reyzarium.eventforge.bookingservice.api.booking.dto.CreateBookingResp
 import com.reyzarium.eventforge.bookingservice.application.mapper.BookingMapper;
 import com.reyzarium.eventforge.bookingservice.application.mapper.OutboxMapper;
 import com.reyzarium.eventforge.bookingservice.application.service.BookingCommandService;
-import com.reyzarium.eventforge.bookingservice.common.error.BookingErrorCode;
-import com.reyzarium.eventforge.bookingservice.common.error.BookingServiceException;
+import com.reyzarium.eventforge.bookingservice.application.validator.BookingCommandValidator;
 import com.reyzarium.eventforge.bookingservice.infrastructure.client.EventServiceClient;
 import com.reyzarium.eventforge.bookingservice.infrastructure.client.dto.TicketTypeDetailsResponse;
 import com.reyzarium.eventforge.bookingservice.infrastructure.persistence.entity.TicketTypeInventoryEntity;
@@ -28,7 +27,6 @@ import java.util.UUID;
 public class BookingCommandServiceImpl implements BookingCommandService {
 
     private static final Duration BOOKING_TTL = Duration.ofMinutes(10);
-    private static final String PUBLISHED_STATUS = "PUBLISHED";
 
     private final BookingRepository bookingRepository;
     private final TicketTypeInventoryRepository inventoryRepository;
@@ -36,12 +34,13 @@ public class BookingCommandServiceImpl implements BookingCommandService {
     private final EventServiceClient eventServiceClient;
     private final BookingMapper bookingMapper;
     private final OutboxMapper outboxMapper;
+    private final BookingCommandValidator bookingCommandValidator;
     private final Clock clock;
 
     @Override
     @Transactional
     public CreateBookingResponse createBooking(UUID userId, String idempotencyKey, CreateBookingRequest request) {
-        String normalizedIdempotencyKey = normalizeIdempotencyKey(idempotencyKey);
+        String normalizedIdempotencyKey = bookingCommandValidator.normalizeIdempotencyKey(idempotencyKey);
 
         return bookingRepository.findByUserIdAndIdempotencyKey(userId, normalizedIdempotencyKey)
                 .map(bookingMapper::toCreateResponse)
@@ -56,7 +55,7 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                 request.eventId(),
                 request.ticketTypeId()
         );
-        validateTicketType(ticketType, request, now);
+        bookingCommandValidator.validateTicketType(ticketType, request, now);
 
         TicketTypeInventoryEntity inventory = getOrCreateInventory(ticketType);
         inventory.reserve(request.quantity());
@@ -84,41 +83,5 @@ public class BookingCommandServiceImpl implements BookingCommandService {
                         .reserved(0)
                         .sold(0)
                         .build()));
-    }
-
-    private void validateTicketType(TicketTypeDetailsResponse ticketType,
-                                    CreateBookingRequest request,
-                                    Instant now) {
-        if (ticketType == null || !request.eventId().equals(ticketType.eventId())
-                || !request.ticketTypeId().equals(ticketType.ticketTypeId())) {
-            throw new BookingServiceException(
-                    BookingErrorCode.TICKET_TYPE_NOT_AVAILABLE,
-                    "Ticket type is not available"
-            );
-        }
-
-        if (!PUBLISHED_STATUS.equals(ticketType.status())) {
-            throw new BookingServiceException(
-                    BookingErrorCode.EVENT_NOT_AVAILABLE,
-                    "Event is not available for booking"
-            );
-        }
-
-        if (!ticketType.startsAt().isAfter(now)) {
-            throw new BookingServiceException(
-                    BookingErrorCode.EVENT_NOT_AVAILABLE,
-                    "Event already started"
-            );
-        }
-    }
-
-    private String normalizeIdempotencyKey(String idempotencyKey) {
-        if (idempotencyKey == null || idempotencyKey.isBlank()) {
-            throw new BookingServiceException(
-                    BookingErrorCode.IDEMPOTENCY_KEY_REQUIRED,
-                    "Idempotency-Key header is required"
-            );
-        }
-        return idempotencyKey.trim();
     }
 }

@@ -1,5 +1,9 @@
 package com.reyzarium.eventforge.bookingservice.application.mapper;
 
+import com.reyzarium.eventforge.bookingservice.application.event.outbox.BookingConfirmedPayload;
+import com.reyzarium.eventforge.bookingservice.application.event.outbox.BookingCreatedPayload;
+import com.reyzarium.eventforge.bookingservice.application.event.outbox.BookingPaymentFailedPayload;
+import com.reyzarium.eventforge.bookingservice.application.event.outbox.EventEnvelope;
 import com.reyzarium.eventforge.bookingservice.domain.outbox.OutboxEventType;
 import com.reyzarium.eventforge.bookingservice.domain.outbox.OutboxStatus;
 import com.reyzarium.eventforge.bookingservice.infrastructure.persistence.entity.BookingEntity;
@@ -9,7 +13,6 @@ import org.mapstruct.Mapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import tools.jackson.databind.ObjectMapper;
 
-import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.UUID;
 
@@ -38,6 +41,36 @@ public abstract class OutboxMapper {
         return toOutboxEvent(booking, OutboxEventType.BOOKING_CREATED, payload, now);
     }
 
+    public OutboxEventEntity toBookingConfirmedOutbox(BookingEntity booking, Instant now) {
+        BookingItemEntity item = booking.getItems().getFirst();
+        BookingConfirmedPayload payload = new BookingConfirmedPayload(
+                booking.getId(),
+                booking.getUserId(),
+                booking.getEventId(),
+                item.getTicketTypeId(),
+                item.getQuantity(),
+                booking.getTotalAmount(),
+                booking.getCurrency()
+        );
+
+        return toOutboxEvent(booking, OutboxEventType.BOOKING_CONFIRMED, payload, now);
+    }
+
+    public OutboxEventEntity toBookingPaymentFailedOutbox(BookingEntity booking, Instant now) {
+        BookingItemEntity item = booking.getItems().getFirst();
+        BookingPaymentFailedPayload payload = new BookingPaymentFailedPayload(
+                booking.getId(),
+                booking.getUserId(),
+                booking.getEventId(),
+                item.getTicketTypeId(),
+                item.getQuantity(),
+                booking.getTotalAmount(),
+                booking.getCurrency()
+        );
+
+        return toOutboxEvent(booking, OutboxEventType.BOOKING_PAYMENT_FAILED, payload, now);
+    }
+
     private OutboxEventEntity toOutboxEvent(BookingEntity booking, String eventType, Object payload, Instant now) {
         UUID outboxEventId = UUID.randomUUID();
         EventEnvelope envelope = new EventEnvelope(
@@ -63,26 +96,4 @@ public abstract class OutboxMapper {
                 .build();
     }
 
-    private record EventEnvelope(
-            UUID eventId,
-            String eventType,
-            Integer eventVersion,
-            Instant occurredAt,
-            String producer,
-            UUID correlationId,
-            Object payload
-    ) {
-    }
-
-    private record BookingCreatedPayload(
-            UUID bookingId,
-            UUID userId,
-            UUID eventId,
-            UUID ticketTypeId,
-            Integer quantity,
-            BigDecimal amount,
-            String currency,
-            Instant expiresAt
-    ) {
-    }
 }

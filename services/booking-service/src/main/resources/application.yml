@@ -22,6 +22,9 @@ spring:
 
   kafka:
     bootstrap-servers: localhost:9092,localhost:9094,localhost:9096
+    consumer:
+      group-id: booking-service
+      auto-offset-reset: earliest
 
 event-service:
   base-url: http://localhost:8081
